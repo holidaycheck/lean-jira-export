@@ -55,6 +55,11 @@ Rather it just assumes that your stories transition through at least one of the 
 
 **_Warning_**: When you sometimes use subtickets and sometimes don't you need to make sure that the story itself enters a PROGRESS - state as soon as the first sub-task does. To automate this check out https://confluence.atlassian.com/jirakb/moving-a-sub-task-to-in-progress-does-not-transition-its-parent-s-to-the-same-status-779158949.html
 
+## Maintaining the code
+The structure is still fairly simple (load from jira & tranform into => model => export model to CSV). This basic extract -> transform -> load structure is reflected also in the java package structure. 
+Check pom.xml for a list of used libraries. 
+
+
 ## Intention
 
 This data should never be used to judge a team, but rather by the team itself and perhaps people intending to help the team
