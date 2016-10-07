@@ -1,3 +1,4 @@
-echo "Building from source and packaging *.properties files. Make sure they are configured correctly! (see README.md)" 
+if test ! -f src/main/resources/JiraClient.properties; then echo "Not configured yet. Check README.md for details"; exit 1; fi 
 mvn clean assembly:assembly
+
 
