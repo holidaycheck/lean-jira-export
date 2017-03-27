@@ -1,6 +1,7 @@
 .DS_Store
 src/main/resources/*.properties
 target/
+*.csv
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

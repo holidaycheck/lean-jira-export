@@ -32,7 +32,7 @@ public class JiraClientPropertiesTest {
     public void testJiraURL() {
         Assert.assertTrue(StringUtils.isNotBlank(this.bundle.getString("jiraURL")));
     }
-    
+
     @Test
     public void testStoryJQL() {
         Assert.assertTrue(StringUtils.isNotBlank(this.bundle.getString("storyJQL")));
