@@ -33,7 +33,8 @@ Just do a
 ./run.sh
 ```
 
-This will run the tool and export data to the directory exported-data
+This will run the tool and export data to the local directory
+Note: you can also edit run.sh to pass alternative JQL to the command-line. This way you could also have multiple export-runs.
 
 ## Using the data
 

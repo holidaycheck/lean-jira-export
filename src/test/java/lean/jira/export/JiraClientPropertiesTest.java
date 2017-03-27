@@ -32,13 +32,7 @@ public class JiraClientPropertiesTest {
     public void testJiraURL() {
         Assert.assertTrue(StringUtils.isNotBlank(this.bundle.getString("jiraURL")));
     }
-
-
-    @Test
-    public void testEpicJQL() {
-        Assert.assertTrue(StringUtils.isNotBlank(this.bundle.getString("epicJQL")));
-    }
-
+    
     @Test
     public void testStoryJQL() {
         Assert.assertTrue(StringUtils.isNotBlank(this.bundle.getString("storyJQL")));
