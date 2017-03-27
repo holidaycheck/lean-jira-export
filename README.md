@@ -42,7 +42,7 @@ Note that exported files are UTF-8 encoded. Thus rather than just double clickin
 import the files into google sheets or excel where you can tell the tool, which encoding the data has.
 
 ### Assumptions made about JIRA
-The tool asumes a linear workflow where the first state is the queue state (like TODO or Open etc.) and the last state is the END of the cycle (like CLOSED or LIVE etc.). 
+The tool asumes a linear workflow where the first state is the queue state (like Tod o or Open etc.) and the last state is the END of the cycle (like CLOSED or LIVE etc.).
 
 Any (minimally 1) states inbetween are considered as contributing to the cycle-time. Stories may go back and forth in between (e.g. from PROGRAMMING to REVIEW and back then a leap forward to ACCEPTANCE and finally to CLOSED). 
 

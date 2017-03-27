@@ -1,13 +1,19 @@
 package lean.jira.export.jiraImport;
 
+import com.atlassian.httpclient.api.Response;
+import com.atlassian.httpclient.api.ResponsePromise;
 import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.SearchResult;
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
+import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler;
+import com.atlassian.jira.rest.client.internal.async.AsynchronousHttpClientFactory;
+import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClient;
+import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -16,10 +22,13 @@ public class JiraClient {
 
     private Logger LOG = LoggerFactory.getLogger(JiraClient.class);
     private JiraRestClient restClient;
-    private ResourceBundle bundle;
 
     private int requestBlockSize;
     private int blockLimit;
+    private String username;
+    private String password;
+    private String storyJql;
+    private String jiraUrl;
 
 
 
@@ -30,7 +39,7 @@ public class JiraClient {
      *
      * Normally it will be configured in JiraClient.properties. But it can be overridden from client code (needed for tests)
      */
-    public void setRequestBlockSize(int requestBlockSize) {
+    void setRequestBlockSize(int requestBlockSize) {
         this.requestBlockSize = requestBlockSize;
     }
 
@@ -38,39 +47,67 @@ public class JiraClient {
      *
      * @param blockLimit Only fetch this many blocks
      */
-    public void setBlockLimit(int blockLimit) {
+    void setBlockLimit(int blockLimit) {
         this.blockLimit = blockLimit;
     }
 
 
-    public JiraClient() {
-        this.bundle = PropertyResourceBundle.getBundle("JiraClient");
+    public JiraClient() throws IOException {
+        this(PropertyResourceBundle.getBundle("JiraClient").getString("storyJQL"));
+
+    }
+
+    public JiraClient(String storyJql) throws IOException {
+        ResourceBundle bundle = PropertyResourceBundle.getBundle("JiraClient");
         // configure request block size. It may be overridden by external code
         String requestBlockSizeString = bundle.getString("requestBlockSize");
         this.requestBlockSize = Integer.parseInt(requestBlockSizeString);
         this.blockLimit = -1; // no limit.
+        this.username = bundle.getString("userName");
+        this.password = bundle.getString("password");
+        this.jiraUrl = bundle.getString("jiraURL");
+        this.storyJql = storyJql;
+        logIn();
 
     }
 
-    public void logIn()  {
+    private void logIn() throws IOException {
         URI jiraServerUri;
         try {
-            jiraServerUri = new URI(this.bundle.getString("jiraURL"));
+            jiraServerUri = new URI(this.jiraUrl);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
 
-        final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
-        this.restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, this.bundle.getString("userName"), this.bundle.getString("password"));
+        // Obtain session
+        final String authString = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
+
+        final BasicHttpAuthenticationHandler basicHttpAuthenticationHandler = new BasicHttpAuthenticationHandler(username, password);
+
+        final DisposableHttpClient httpClient = new AsynchronousHttpClientFactory()
+                .createClient(jiraServerUri, basicHttpAuthenticationHandler);
+
+        ResponsePromise responsePromise = httpClient
+                .newRequest(jiraUrl + "/rest/auth/1/session")
+                .setContentType("application/json")
+                .setAccept("application/json")
+                .setEntity(authString)
+                .post();
+
+        Response response = responsePromise.claim();
+        System.out.println(response.getStatusCode());
+        this.restClient = new AsynchronousJiraRestClient(jiraServerUri, httpClient);
+
+        LOG.info("LoggedIn as : " + restClient.getUserClient().getUser(username).claim().getDisplayName());
+
     }
 
     public Iterable<Issue> getStories() {
-        String storyJQL = this.bundle.getString("storyJQL");
-        return getIssues(storyJQL);
+        return getIssues(storyJql);
     }
 
 
-    public Iterable<Issue> getIssues(String jql) {
+    Iterable<Issue> getIssues(final String jql) {
 
         LOG.debug("Querying for issues JQL: " +jql);
 
@@ -85,7 +122,7 @@ public class JiraClient {
             private Iterator<Issue> currentBlock;
             private int searchResultTotal = 0;
 
-            public RemoteIterator(String storyJQL) {
+            RemoteIterator(String storyJQL) {
                 this.storyJQL = storyJQL;
                 fetchBlock();
             }
@@ -125,6 +162,13 @@ public class JiraClient {
 
                 return nextIssue;
             }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("remove");
+            }
+
+
         }
 
         final RemoteIterator iterator = new RemoteIterator(jql);

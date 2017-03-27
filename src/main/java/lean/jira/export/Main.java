@@ -24,11 +24,9 @@ public class Main {
         // create services:
 
         // source
-        LOG.info("logIn to jira");
-        JiraClient client = new JiraClient();
-        client.logIn();
+        JiraClient client = args.length == 0 ? new JiraClient(): new JiraClient(args[0]);
 
-
+//        LOG.info("logIn to jira");
         // exporter
         CSVFileWriter csvFileWriter = new CSVFileWriter();
 

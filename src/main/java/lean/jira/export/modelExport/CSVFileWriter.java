@@ -29,9 +29,8 @@ public class CSVFileWriter {
 
 
     private void configureFile(ResourceBundle bundle) {
-        String outputDir = bundle.getString("outputDir");
         String outputFileDateFormat = bundle.getString("outputFileDateFormat");
-        File dir = new File(outputDir);
+        File dir = new File(".");
         String dateString = (new SimpleDateFormat(outputFileDateFormat)).format(new Date());
         this.file = new File(dir, "JIRAExport_" + dateString + ".csv");
     }
