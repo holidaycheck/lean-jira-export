@@ -19,7 +19,7 @@ import java.util.Arrays;
 public class LeanIssueBuilderTest {
 
     // creation date is far in the past => this moves all transitions to the past allowing realtime calculations (now - transitionDate) to be positive!
-    private final DateTime creationDate = new DateTime().minusDays(10);
+    private final DateTime creationDate = new DateTime().minusDays(5);
     private long oneDayMs = creationDate.plusDays(1).getMillis() - creationDate.getMillis();
 
 

@@ -2,6 +2,7 @@
 src/main/resources/*.properties
 target/
 *.csv
+*.xls*
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
